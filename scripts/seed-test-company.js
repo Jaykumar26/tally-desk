@@ -35,11 +35,11 @@ const UNITS = ['Nos', 'Kg', 'Bag'];
 const STOCK_GROUPS = ['Steel', 'Cement', 'Hardware'];
 
 const LEDGERS = [
-  { name: 'Ram Traders', parent: 'Sundry Debtors', billwise: true, mobile: '9876543210', credit: '30 Days' },
-  { name: 'Shreeji Enterprise', parent: 'Sundry Debtors', billwise: true, mobile: '9825011111', credit: '45 Days' },
-  { name: 'Nova Hardware', parent: 'Sundry Debtors', billwise: true, mobile: '9998887770', credit: '' },
-  { name: 'Sitaram and Co', parent: 'Sundry Debtors', billwise: true, mobile: '9723344556', credit: '15 Days' },
-  { name: 'Anand Steel Supply', parent: 'Sundry Creditors', billwise: true, mobile: '9812345678', credit: '30 Days' },
+  { name: 'Ram Traders', parent: 'Sundry Debtors', billwise: true, mobile: '9000000001', credit: '30 Days' },
+  { name: 'Shreeji Enterprise', parent: 'Sundry Debtors', billwise: true, mobile: '9000000002', credit: '45 Days' },
+  { name: 'Nova Hardware', parent: 'Sundry Debtors', billwise: true, mobile: '9000000003', credit: '' },
+  { name: 'Sitaram and Co', parent: 'Sundry Debtors', billwise: true, mobile: '9000000004', credit: '15 Days' },
+  { name: 'Anand Steel Supply', parent: 'Sundry Creditors', billwise: true, mobile: '9000000005', credit: '30 Days' },
   { name: 'Sales', parent: 'Sales Accounts', billwise: false },
   { name: 'Purchase', parent: 'Purchase Accounts', billwise: false },
   { name: 'HDFC Bank', parent: 'Bank Accounts', billwise: false },
