@@ -1,0 +1,17 @@
+{
+  "name": "tally-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A large-type browser interface over TallyPrime's HTTP-XML gateway.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node scripts/demo.js",
+    "mock": "node lib/mock-tally.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}

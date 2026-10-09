@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tally Desk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#8377;</text></svg>">
+</head>
+<body>
+
+<div class="tally-frame">
+
+  <!-- Title bar, as TallyPrime shows it: product, open company, current date. -->
+  <header class="tally-header">
+    <div class="tally-product">Tally Desk</div>
+    <div class="tally-header-field">
+      <span class="cap">Company</span>
+      <strong id="companyLabel">Connecting…</strong>
+    </div>
+    <div class="tally-header-field">
+      <span class="cap">Date</span>
+      <strong id="todayLabel">—</strong>
+    </div>
+  </header>
+
+  <!-- The breadcrumb strip: which screen you are standing on. -->
+  <div class="tally-screen-bar">
+    <span class="tally-breadcrumb">Gateway of Tally Desk</span>
+    <span class="tally-sep">&rsaquo;</span>
+    <span class="tally-screen-name" id="screenTitle">Money Due</span>
+  </div>
+
+  <div class="tally-body">
+    <main class="tally-workspace">
+      <div id="globalError"></div>
+
+  <!-- ------------------------------------------------------ Money Due -->
+  <section class="view" id="view-outstanding" role="tabpanel">
+    <h2>Money Due</h2>
+    <p class="hint">Pending bills straight from Tally. Click a party to see each bill.</p>
+
+    <div class="row" style="margin-bottom:1rem">
+      <div class="toggle">
+        <button id="btnReceivable" aria-pressed="true">They owe us</button>
+        <button id="btnPayable" aria-pressed="false">We owe them</button>
+      </div>
+      <input type="search" id="outstandingSearch" class="grow" placeholder="Search a party…" aria-label="Search parties">
+      <button class="btn" id="btnPrintOutstanding">Print bill-wise</button>
+      <button class="btn" id="btnRefreshOutstanding">Refresh</button>
+    </div>
+
+    <div class="tiles" id="outstandingTiles"></div>
+    <div id="outstandingAgeing"></div>
+    <div id="outstandingList"></div>
+  </section>
+
+  <!-- -------------------------------------------------------- Parties -->
+  <section class="view" id="view-parties" role="tabpanel" hidden>
+    <h2>Parties</h2>
+    <p class="hint">Search any customer or supplier to see their balance, bills and statement.</p>
+
+    <div class="row" style="margin-bottom:1rem">
+      <input type="search" id="partySearch" class="grow" placeholder="Type a name…" aria-label="Search parties">
+      <label style="margin:0"><input type="checkbox" id="partyAll" style="width:auto"> Include all ledgers</label>
+    </div>
+
+    <div id="partyResults"></div>
+    <div id="partyDetail"></div>
+  </section>
+
+  <!-- ---------------------------------------------------------- Stock -->
+  <section class="view" id="view-stock" role="tabpanel" hidden>
+    <h2>Stock</h2>
+    <p class="hint">Closing quantity, value and rate for every item.</p>
+
+    <div class="row" style="margin-bottom:1rem">
+      <input type="search" id="stockSearch" class="grow" placeholder="Search an item…" aria-label="Search stock items">
+      <button class="btn" id="btnRefreshStock">Refresh</button>
+    </div>
+
+    <div class="tiles" id="stockTiles"></div>
+    <div id="stockList"></div>
+  </section>
+
+  <!-- ------------------------------------------------------- New Bill -->
+  <section class="view" id="view-invoice" role="tabpanel" hidden>
+    <h2>Sales</h2>
+    <p class="hint">A sales bill with items. Nothing is saved until you check the preview and confirm.</p>
+
+    <div id="invoiceMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="invParty">Customer</label>
+          <input type="text" id="invParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="invDate">Date</label>
+          <input type="date" id="invDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="invType">Voucher type</label>
+          <select id="invType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="invSalesLedger">Sales ledger</label>
+          <select id="invSalesLedger"></select>
+        </div>
+        <div class="grow">
+          <label for="invReference">Bill number / reference</label>
+          <input type="text" id="invReference" placeholder="e.g. INV-1102">
+        </div>
+      </div>
+      <p class="hint" id="invPartyBalance" style="margin:.6rem 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Items</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:14rem">Item</th>
+              <th class="num" style="width:7rem">Qty</th>
+              <th style="width:6rem">Unit</th>
+              <th class="num" style="width:8rem">Rate</th>
+              <th class="num" style="width:9rem">Amount</th>
+              <th style="width:3rem"></th>
+            </tr>
+          </thead>
+          <tbody id="invLines"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn" id="btnAddLine">+ Add item</button>
+        <div class="spacer"></div>
+        <div>
+          <label for="invGst" style="text-align:right">GST</label>
+          <select id="invGst" style="width:8rem">
+            <option value="0">None</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="invNarration">Note (optional)</label>
+      <textarea id="invNarration" rows="2" placeholder="Anything to record with this bill"></textarea>
+      <div class="row" style="margin-top:1rem; align-items:center">
+        <div class="tile" style="flex:1 1 12rem">
+          <div class="label">Bill total</div>
+          <div class="figure" id="invTotal">₹0.00</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="btnPrintInvoice">Print</button>
+        <button class="btn" id="btnClearInvoice">Clear</button>
+        <button class="btn primary" id="btnPreviewInvoice">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------- Receipt -->
+  <section class="view" id="view-receipt" role="tabpanel" hidden>
+    <h2>Receipt</h2>
+    <p class="hint">Record money received. Tick the bills it settles, or leave them for an on-account credit.</p>
+
+    <div id="receiptMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="rcpParty">Received from</label>
+          <input type="text" id="rcpParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="rcpDate">Date</label>
+          <input type="date" id="rcpDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="rcpType">Voucher type</label>
+          <select id="rcpType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="rcpDeposit">Received into</label>
+          <select id="rcpDeposit"></select>
+        </div>
+        <div style="flex:0 0 12rem">
+          <label for="rcpAmount">Amount</label>
+          <input type="number" id="rcpAmount" min="0" step="0.01" value="0">
+        </div>
+        <div class="grow">
+          <label for="rcpReference">Reference (cheque / UPI no.)</label>
+          <input type="text" id="rcpReference">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="rcpBillsCard">
+      <h3 style="margin-top:0">Open bills</h3>
+      <div id="rcpBills"><p class="empty">Choose a party to see their open bills.</p></div>
+    </div>
+
+    <div class="card">
+      <label for="rcpNarration">Note (optional)</label>
+      <textarea id="rcpNarration" rows="2"></textarea>
+      <div class="row" style="margin-top:1rem">
+        <div class="spacer"></div>
+        <button class="btn" id="btnClearReceipt">Clear</button>
+        <button class="btn primary" id="btnPreviewReceipt">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- Day Bills -->
+  <section class="view" id="view-daybills" role="tabpanel" hidden>
+    <h2>Day Bills</h2>
+    <p class="hint">
+      Running bills for the day. Add items each time a customer comes back, then save
+      the finished bill to Tally at closing time.
+    </p>
+
+    <div id="daybillsMessages"></div>
+
+    <div class="notice warn" id="daybillsNotSaved">
+      <strong>These are not in Tally yet.</strong>
+      They are held on this computer until you press Save to Tally.
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="dbParty">Start a bill for</label>
+          <input type="text" id="dbParty" list="listParties" placeholder="Customer name" autocomplete="off">
+        </div>
+        <div class="grow">
+          <label for="dbSalesLedger">Sales ledger</label>
+          <select id="dbSalesLedger"></select>
+        </div>
+        <div style="flex:0 0 8rem">
+          <label for="dbGst">GST</label>
+          <select id="dbGst">
+            <option value="0">None</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+        <button class="btn primary" id="btnStartDayBill">Open bill</button>
+      </div>
+    </div>
+
+    <div class="tiles" id="daybillsTiles"></div>
+    <div id="daybillsList"></div>
+
+    <div class="card" id="daybillsFooter" hidden>
+      <div class="row">
+        <div class="spacer"></div>
+        <button class="btn primary" id="btnSaveAllDayBills">Save all to Tally</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- Purchase -->
+  <section class="view" id="view-purchase" role="tabpanel" hidden>
+    <h2>Purchase</h2>
+    <p class="hint">A supplier's bill. Stock comes in and the supplier is credited.</p>
+
+    <div id="purchaseMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="purParty">Supplier</label>
+          <input type="text" id="purParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="purDate">Date</label>
+          <input type="date" id="purDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="purType">Voucher type</label>
+          <select id="purType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="purLedger">Purchase ledger</label>
+          <select id="purLedger"></select>
+        </div>
+        <div class="grow">
+          <label for="purReference">Supplier's bill number</label>
+          <input type="text" id="purReference" placeholder="e.g. 4471/26-27">
+        </div>
+      </div>
+      <p class="hint" id="purPartyBalance" style="margin:.6rem 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Items</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:14rem">Item</th>
+              <th class="num" style="width:7rem">Qty</th>
+              <th style="width:6rem">Unit</th>
+              <th class="num" style="width:8rem">Rate</th>
+              <th class="num" style="width:9rem">Amount</th>
+              <th style="width:3rem"></th>
+            </tr>
+          </thead>
+          <tbody id="purLines"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn" id="btnAddPurLine">+ Add item</button>
+        <div class="spacer"></div>
+        <div>
+          <label for="purGst" style="text-align:right">GST</label>
+          <select id="purGst" style="width:8rem">
+            <option value="0">None</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="purNarration">Note (optional)</label>
+      <textarea id="purNarration" rows="2"></textarea>
+      <div class="row" style="margin-top:1rem; align-items:center">
+        <div class="tile" style="flex:1 1 12rem">
+          <div class="label">Bill total</div>
+          <div class="figure" id="purTotal">₹0.00</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="btnPrintPurchase">Print</button>
+        <button class="btn" id="btnClearPurchase">Clear</button>
+        <button class="btn primary" id="btnPreviewPurchase">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------- Payment -->
+  <section class="view" id="view-payment" role="tabpanel" hidden>
+    <h2>Payment</h2>
+    <p class="hint">Money paid out. Tick the supplier bills it settles, or leave them for an on-account debit.</p>
+
+    <div id="paymentMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="payParty">Paid to</label>
+          <input type="text" id="payParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="payDate">Date</label>
+          <input type="date" id="payDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="payType">Voucher type</label>
+          <select id="payType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="payDeposit">Paid from</label>
+          <select id="payDeposit"></select>
+        </div>
+        <div style="flex:0 0 12rem">
+          <label for="payAmount">Amount</label>
+          <input type="number" id="payAmount" min="0" step="0.01" value="0">
+        </div>
+        <div class="grow">
+          <label for="payReference">Reference (cheque / UPI no.)</label>
+          <input type="text" id="payReference">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Open bills</h3>
+      <div id="payBills"><p class="empty">Choose a supplier to see their open bills.</p></div>
+    </div>
+
+    <div class="card">
+      <label for="payNarration">Note (optional)</label>
+      <textarea id="payNarration" rows="2"></textarea>
+      <div class="row" style="margin-top:1rem">
+        <div class="spacer"></div>
+        <button class="btn" id="btnClearPayment">Clear</button>
+        <button class="btn primary" id="btnPreviewPayment">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- Contra -->
+  <section class="view" id="view-contra" role="tabpanel" hidden>
+    <h2>Contra</h2>
+    <p class="hint">Money moved between your own cash and bank accounts — a bank withdrawal, a cash deposit, a transfer.</p>
+
+    <div id="contraMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="conFrom">Paid from</label>
+          <select id="conFrom"></select>
+        </div>
+        <div class="grow">
+          <label for="conTo">Paid into</label>
+          <select id="conTo"></select>
+        </div>
+        <button class="btn small" id="btnSwapContra" title="Swap the two accounts" style="flex:0 0 auto">&#8646; Swap</button>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div style="flex:0 0 12rem">
+          <label for="conAmount">Amount</label>
+          <input type="number" id="conAmount" min="0" step="0.01" value="0">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="conDate">Date</label>
+          <input type="date" id="conDate">
+        </div>
+        <div class="grow">
+          <label for="conReference">Reference (cheque / slip no.)</label>
+          <input type="text" id="conReference">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="conType">Voucher type</label>
+          <select id="conType"></select>
+        </div>
+      </div>
+      <p class="hint" id="conBalances" style="margin:.6rem 0 0"></p>
+    </div>
+
+    <div class="card">
+      <label for="conNarration">Note (optional)</label>
+      <textarea id="conNarration" rows="2"></textarea>
+      <div class="row" style="margin-top:1rem">
+        <div class="spacer"></div>
+        <button class="btn" id="btnClearContra">Clear</button>
+        <button class="btn primary" id="btnPreviewContra">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------- Journal -->
+  <section class="view" id="view-journal" role="tabpanel" hidden>
+    <h2>Journal</h2>
+    <p class="hint">An adjustment entry. Add debit and credit lines — the two sides must match before it can be saved.</p>
+
+    <div id="journalMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div style="flex:0 0 10rem">
+          <label for="jrnDate">Date</label>
+          <input type="date" id="jrnDate">
+        </div>
+        <div class="grow">
+          <label for="jrnReference">Reference</label>
+          <input type="text" id="jrnReference">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="jrnType">Voucher type</label>
+          <select id="jrnType"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Entries</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:14rem">Ledger</th>
+              <th style="width:7rem">Dr / Cr</th>
+              <th class="num" style="width:10rem">Amount</th>
+              <th style="width:11rem">Bill reference</th>
+              <th style="width:3rem"></th>
+            </tr>
+          </thead>
+          <tbody id="jrnLines"></tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2">Total</th>
+              <th class="num"><span id="jrnTotals">Dr 0.00 / Cr 0.00</span></th>
+              <th colspan="2"><span id="jrnBalance" class="tag">Balanced</span></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn" id="btnAddJrnLine">+ Add line</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="jrnNarration">Note (optional)</label>
+      <textarea id="jrnNarration" rows="2"></textarea>
+      <div class="row" style="margin-top:1rem">
+        <div class="spacer"></div>
+        <button class="btn" id="btnClearJournal">Clear</button>
+        <button class="btn primary" id="btnPreviewJournal">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ----------------------------------------------- Credit Note -->
+  <section class="view" id="view-creditnote" role="tabpanel" hidden>
+    <h2>Credit Note</h2>
+    <p class="hint">Goods a customer sent back. They are credited and the stock comes back in.</p>
+
+    <div id="creditnoteMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="crnParty">Customer</label>
+          <input type="text" id="crnParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="crnDate">Date</label>
+          <input type="date" id="crnDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="crnType">Voucher type</label>
+          <select id="crnType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="crnLedger">Sales return ledger</label>
+          <select id="crnLedger"></select>
+        </div>
+        <div class="grow">
+          <label for="crnAgainst">Against original bill</label>
+          <select id="crnAgainst"></select>
+        </div>
+        <div class="grow">
+          <label for="crnReference">Note number</label>
+          <input type="text" id="crnReference">
+        </div>
+      </div>
+      <p class="hint" id="crnPartyBalance" style="margin:.6rem 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Items returned</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:14rem">Item</th>
+              <th class="num" style="width:7rem">Qty</th>
+              <th style="width:6rem">Unit</th>
+              <th class="num" style="width:8rem">Rate</th>
+              <th class="num" style="width:9rem">Amount</th>
+              <th style="width:3rem"></th>
+            </tr>
+          </thead>
+          <tbody id="crnLines"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn" id="btnAddCrnLine">+ Add item</button>
+        <div class="spacer"></div>
+        <div>
+          <label for="crnGst" style="text-align:right">GST</label>
+          <select id="crnGst" style="width:8rem">
+            <option value="0">None</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="crnNarration">Reason / note</label>
+      <textarea id="crnNarration" rows="2" placeholder="Why the goods came back"></textarea>
+      <div class="row" style="margin-top:1rem; align-items:center">
+        <div class="tile" style="flex:1 1 12rem">
+          <div class="label">Note total</div>
+          <div class="figure" id="crnTotal">₹0.00</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="btnPrintCrn">Print</button>
+        <button class="btn" id="btnClearCrn">Clear</button>
+        <button class="btn primary" id="btnPreviewCrn">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ Debit Note -->
+  <section class="view" id="view-debitnote" role="tabpanel" hidden>
+    <h2>Debit Note</h2>
+    <p class="hint">Goods sent back to a supplier. They are debited and the stock goes out.</p>
+
+    <div id="debitnoteMessages"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label for="dbnParty">Supplier</label>
+          <input type="text" id="dbnParty" list="listParties" placeholder="Start typing a name" autocomplete="off">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="dbnDate">Date</label>
+          <input type="date" id="dbnDate">
+        </div>
+        <div style="flex:0 0 10rem">
+          <label for="dbnType">Voucher type</label>
+          <select id="dbnType"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <div class="grow">
+          <label for="dbnLedger">Purchase return ledger</label>
+          <select id="dbnLedger"></select>
+        </div>
+        <div class="grow">
+          <label for="dbnAgainst">Against original bill</label>
+          <select id="dbnAgainst"></select>
+        </div>
+        <div class="grow">
+          <label for="dbnReference">Note number</label>
+          <input type="text" id="dbnReference">
+        </div>
+      </div>
+      <p class="hint" id="dbnPartyBalance" style="margin:.6rem 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Items returned</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:14rem">Item</th>
+              <th class="num" style="width:7rem">Qty</th>
+              <th style="width:6rem">Unit</th>
+              <th class="num" style="width:8rem">Rate</th>
+              <th class="num" style="width:9rem">Amount</th>
+              <th style="width:3rem"></th>
+            </tr>
+          </thead>
+          <tbody id="dbnLines"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn" id="btnAddDbnLine">+ Add item</button>
+        <div class="spacer"></div>
+        <div>
+          <label for="dbnGst" style="text-align:right">GST</label>
+          <select id="dbnGst" style="width:8rem">
+            <option value="0">None</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="dbnNarration">Reason / note</label>
+      <textarea id="dbnNarration" rows="2" placeholder="Why the goods came back"></textarea>
+      <div class="row" style="margin-top:1rem; align-items:center">
+        <div class="tile" style="flex:1 1 12rem">
+          <div class="label">Note total</div>
+          <div class="figure" id="dbnTotal">₹0.00</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="btnPrintDbn">Print</button>
+        <button class="btn" id="btnClearDbn">Clear</button>
+        <button class="btn primary" id="btnPreviewDbn">Check &amp; Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------- Day End -->
+  <section class="view" id="view-dayend" role="tabpanel" hidden>
+    <h2>Day End Summary</h2>
+    <p class="hint">Everything entered on one day, and where the cash stands at the close of it.</p>
+
+    <div class="row" style="margin-bottom:1rem">
+      <div style="flex:0 0 12rem">
+        <label for="deDate">Date</label>
+        <input type="date" id="deDate">
+      </div>
+      <button class="btn" id="btnLoadDayEnd">Show</button>
+      <div class="spacer"></div>
+      <button class="btn" id="btnPrintDayEnd">Print summary</button>
+    </div>
+
+    <div id="dayendMessages"></div>
+    <div class="tiles" id="dayendTiles"></div>
+    <div id="dayendOpenBills"></div>
+    <div id="dayendByType"></div>
+    <div id="dayendCash"></div>
+    <div id="dayendEntries"></div>
+  </section>
+
+  <!-- ------------------------------------------------------- Settings -->
+  <section class="view" id="view-settings" role="tabpanel" hidden>
+    <h2>Settings</h2>
+    <p class="hint">Where to find Tally, and tools for when something looks wrong.</p>
+
+    <div class="card">
+      <h3 style="margin-top:0">Tally connection</h3>
+      <div class="row">
+        <div class="grow">
+          <label for="setHost">Computer</label>
+          <input type="text" id="setHost" placeholder="127.0.0.1">
+        </div>
+        <div style="flex:0 0 8rem">
+          <label for="setPort">Port</label>
+          <input type="number" id="setPort" placeholder="9000">
+        </div>
+        <div class="grow">
+          <label for="setCompany">Company</label>
+          <select id="setCompany"></select>
+        </div>
+        <button class="btn primary" id="btnSaveSettings">Save</button>
+      </div>
+      <p class="hint" style="margin:.75rem 0 0">
+        In TallyPrime: press <strong>F1 &rarr; Settings &rarr; Connectivity</strong> and set
+        <strong>“TallyPrime acts as”</strong> to <strong>Both</strong>. Leave the port at 9000.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Recently saved from here</h3>
+      <div id="postedList"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Diagnostics</h3>
+      <p class="hint">Shows the exact XML sent to Tally and what came back — useful when a screen looks empty or wrong.</p>
+      <div class="row">
+        <select id="diagRequest" class="grow">
+          <option value="companies">Companies</option>
+          <option value="ledgers">Ledgers</option>
+          <option value="bills">Bills (outstanding)</option>
+          <option value="stock">Stock items</option>
+          <option value="voucherTypes">Voucher types</option>
+          <option value="vouchers">Vouchers (this year)</option>
+        </select>
+        <button class="btn" id="btnRunDiag">Run</button>
+        <button class="btn" id="btnCopyDiag">Copy result</button>
+      </div>
+      <div id="diagOutput"></div>
+    </div>
+  </section>
+</main>
+
+    <!-- The right-hand button panel, where Tally keeps its function keys. -->
+    <nav class="tally-buttons" role="tablist" id="tabs" aria-label="Screens">
+      <div class="tally-group">
+        <div class="tally-group-label">Reports</div>
+        <button role="tab" data-view="outstanding" aria-selected="true">Money Due</button>
+        <button role="tab" data-view="parties" aria-selected="false">Parties</button>
+        <button role="tab" data-view="stock" aria-selected="false">Stock</button>
+        <button role="tab" data-view="dayend" aria-selected="false">Day End</button>
+      </div>
+
+      <div class="tally-group">
+        <div class="tally-group-label">Counter</div>
+        <button role="tab" data-view="daybills" aria-selected="false">Day Bills</button>
+      </div>
+
+      <div class="tally-group">
+        <div class="tally-group-label">Vouchers</div>
+        <button role="tab" data-view="invoice" aria-selected="false">Sales <kbd>F8</kbd></button>
+        <button role="tab" data-view="purchase" aria-selected="false">Purchase <kbd>F9</kbd></button>
+        <button role="tab" data-view="receipt" aria-selected="false">Receipt <kbd>F6</kbd></button>
+        <button role="tab" data-view="payment" aria-selected="false">Payment <kbd>A-F5</kbd></button>
+        <button role="tab" data-view="contra" aria-selected="false">Contra <kbd>F4</kbd></button>
+        <button role="tab" data-view="journal" aria-selected="false">Journal <kbd>F7</kbd></button>
+        <button role="tab" data-view="creditnote" aria-selected="false">Credit Note <kbd>C-F8</kbd></button>
+        <button role="tab" data-view="debitnote" aria-selected="false">Debit Note <kbd>C-F9</kbd></button>
+      </div>
+
+      <div class="tally-group">
+        <div class="tally-group-label">Setup</div>
+        <button role="tab" data-view="settings" aria-selected="false">Settings</button>
+      </div>
+    </nav>
+  </div>
+
+  <footer class="tally-status">
+    <button class="pill busy" id="statusPill" title="Click to check the Tally connection again">
+      <span class="dot"></span><span id="statusText">Checking…</span>
+    </button>
+    <span class="tally-gateway" id="gatewayLabel"></span>
+    <div class="spacer"></div>
+    <span class="tally-hint">Text size</span>
+    <div class="sizer">
+      <button id="textSmaller" title="Smaller text" aria-label="Smaller text">A&minus;</button>
+      <button id="textBigger" title="Bigger text" aria-label="Bigger text">A&plus;</button>
+    </div>
+  </footer>
+
+</div>
+
+<datalist id="listParties"></datalist>
+<datalist id="listItems"></datalist>
+<datalist id="listLedgers"></datalist>
+
+<div id="modalHost"></div>
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

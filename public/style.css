@@ -1,0 +1,500 @@
+/*
+ * Tally Desk — styled to sit alongside TallyPrime rather than look like a
+ * website: a blue title bar, a breadcrumb strip, the workspace on the left and
+ * the function-key button panel down the right, with a status line at the foot.
+ *
+ * Type stays large and numbers stay tabular, because this is read at arm's
+ * length across a shop counter.
+ */
+
+:root {
+  --step: 1;                 /* scaled by the A-/A+ buttons */
+
+  --navy: #16336b;
+  --navy-dark: #0f2450;
+  --navy-light: #29529b;
+
+  --workspace: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f4fa;
+  --panel: #dde5f2;
+  --page: #c9d4e6;
+
+  --border: #adbdd8;
+  --border-strong: #7f95bb;
+  --rule: #dbe3f0;
+
+  --ink: #10203f;
+  --ink-soft: #3d5273;
+  --ink-faint: #6a7b98;
+
+  --accent: var(--navy);
+  --accent-ink: #ffffff;
+  --highlight: #ffd75e;      /* the selection yellow Tally uses */
+  --highlight-ink: #3a2b00;
+
+  --danger: #a01818;
+  --danger-bg: #fdeeee;
+  --warn: #7a5200;
+  --warn-bg: #fff7e2;
+  --good: #14652f;
+  --good-bg: #eaf7ee;
+
+  --chip-bg: rgba(255, 255, 255, .65);
+  --chip-ink: #45597d;
+  --row-hover: #e4ecfa;
+
+  --radius: 3px;             /* Tally is square; barely rounded */
+  --shadow: 0 1px 2px rgba(16, 32, 63, .18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --navy: #16294a;
+    --navy-dark: #0a142a;
+    --navy-light: #24406e;
+    --workspace: #101a2e;
+    --surface: #101a2e;
+    --surface-2: #172440;
+    --panel: #16233d;
+    --page: #070e1c;
+    --border: #2c3c5d;
+    --border-strong: #4a5f86;
+    --rule: #22314e;
+    --ink: #e8eefb;
+    --ink-soft: #b9c6de;
+    --ink-faint: #8798b6;
+    --highlight: #d8a92a;
+    --highlight-ink: #1a1200;
+    --danger: #f0a3a3;
+    --danger-bg: #3a1414;
+    --warn: #f0cd7a;
+    --warn-bg: #382a08;
+    --good: #8fdca6;
+    --good-bg: #0e2a19;
+    --chip-bg: rgba(255, 255, 255, .12);
+    --chip-ink: #cbd9f0;
+    --row-hover: #1e2f4e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: calc(16px * var(--step)); }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Segoe UI", Tahoma, system-ui, -apple-system, sans-serif;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ------------------------------------------------------------- the frame */
+
+.tally-frame {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.tally-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: .45rem 1rem;
+  background: linear-gradient(180deg, var(--navy-light), var(--navy));
+  color: #fff;
+  border-bottom: 2px solid var(--navy-dark);
+}
+
+.tally-product {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.tally-header-field { display: flex; align-items: baseline; gap: .45rem; font-size: .9rem; }
+.tally-header-field .cap {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  opacity: .75;
+}
+.tally-header-field strong { font-weight: 600; }
+
+/* The breadcrumb strip below the title bar. */
+.tally-screen-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  font-size: .85rem;
+  color: var(--ink-soft);
+}
+.tally-breadcrumb { opacity: .8; }
+.tally-sep { color: var(--ink-faint); }
+.tally-screen-name { font-weight: 700; color: var(--ink); }
+
+.tally-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tally-workspace {
+  min-width: 0;
+  padding: 1rem 1.1rem 2rem;
+  background: var(--workspace);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------- right-hand button panel */
+
+.tally-buttons {
+  flex: 0 0 auto;
+  width: 12.5rem;
+  padding: .5rem .45rem 1.5rem;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  overflow-y: auto;
+}
+
+.tally-group { display: flex; flex-direction: column; gap: 2px; }
+
+.tally-group-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--ink-faint);
+  padding: .2rem .45rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: .2rem;
+}
+
+.tally-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem;
+  width: 100%;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 600;
+  text-align: left;
+  padding: .42rem .5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.tally-buttons button:hover { background: var(--surface); color: var(--ink); border-color: var(--border); }
+
+/* The screen you are on, marked the way Tally marks a selection. */
+.tally-buttons button[aria-selected="true"] {
+  background: var(--highlight);
+  color: var(--highlight-ink);
+  border-color: var(--border-strong);
+}
+
+.tally-buttons kbd {
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .05rem .3rem;
+  border-radius: 2px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tally-buttons button[aria-selected="true"] kbd {
+  background: rgba(0, 0, 0, .12);
+  color: var(--highlight-ink);
+  border-color: rgba(0, 0, 0, .2);
+}
+
+/* ---------------------------------------------------------------- status */
+
+.tally-status {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  padding: .35rem 1rem;
+  background: var(--navy);
+  color: #dbe4f6;
+  border-top: 2px solid var(--navy-dark);
+  font-size: .82rem;
+}
+.tally-gateway { opacity: .75; font-variant-numeric: tabular-nums; }
+.tally-hint { opacity: .7; }
+.spacer { flex: 1; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  padding: .16rem .6rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  cursor: pointer;
+  background: rgba(255, 255, 255, .1);
+}
+.pill.ok   { color: #9ff0b6; }
+.pill.bad  { color: #ffb4b4; }
+.pill.busy { color: #ffd98a; }
+.pill .dot { width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+
+.sizer { display: flex; gap: .25rem; }
+.sizer button {
+  width: 1.9rem; height: 1.9rem;
+  font: inherit; font-weight: 700; font-size: .8rem;
+  border: 1px solid rgba(255, 255, 255, .4);
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.sizer button:hover { background: rgba(255, 255, 255, .22); }
+
+/* ----------------------------------------------------------------- views */
+
+.view[hidden] { display: none; }
+
+/* Report titles are centred and ruled, the way Tally titles a report. */
+.view > h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 .2rem;
+  padding-bottom: .4rem;
+  border-bottom: 2px solid var(--navy);
+  color: var(--navy);
+}
+@media (prefers-color-scheme: dark) {
+  .view > h2 { color: var(--ink); border-bottom-color: var(--border-strong); }
+}
+
+h3 { font-size: .98rem; margin: 1rem 0 .5rem; color: var(--ink-soft); }
+.hint { color: var(--ink-faint); font-size: .85rem; margin: .5rem 0 1rem; text-align: center; }
+.card .hint, .row .hint { text-align: left; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+  margin-bottom: .9rem;
+  box-shadow: var(--shadow);
+}
+
+.row { display: flex; gap: .7rem; flex-wrap: wrap; align-items: flex-end; }
+.grow { flex: 1 1 13rem; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: .6rem; margin-bottom: .9rem; }
+.tile {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--navy);
+  border-radius: var(--radius);
+  padding: .6rem .85rem;
+}
+.tile.warn { border-left-color: var(--warn); }
+.tile.bad  { border-left-color: var(--danger); }
+.tile .label {
+  font-size: .7rem; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .07em; font-weight: 700;
+}
+.tile .figure { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* -------------------------------------------------------------- controls */
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: .2rem;
+  color: var(--ink-soft);
+}
+
+input, select, textarea, button { font: inherit; }
+
+input[type="text"], input[type="number"], input[type="date"], input[type="search"], select, textarea {
+  width: 100%;
+  padding: .42rem .55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+}
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: 2px solid var(--navy-light);
+  outline-offset: 1px;
+}
+input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+
+.btn {
+  padding: .42rem 1rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  color: var(--ink);
+  cursor: pointer;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.primary {
+  background: linear-gradient(180deg, var(--navy-light), var(--navy));
+  color: #fff;
+  border-color: var(--navy-dark);
+}
+.btn.primary:hover { filter: brightness(1.12); }
+.btn.danger { color: var(--danger); border-color: currentColor; background: var(--surface); }
+.btn.small { padding: .22rem .55rem; font-size: .8rem; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--radius); overflow: hidden; }
+.toggle button { padding: .42rem 1rem; font-weight: 600; border: none; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+
+/* ---------------------------------------------------------------- tables */
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .38rem .55rem; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .05em;
+  color: #fff; background: var(--navy);
+  position: sticky; top: 0; border-bottom: 1px solid var(--navy-dark);
+}
+tfoot th { background: var(--surface-2); color: var(--ink); border-top: 2px solid var(--border-strong); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:hover { background: var(--row-hover); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+
+.tag {
+  display: inline-block;
+  font-size: .7rem; font-weight: 700;
+  padding: .05rem .45rem;
+  border-radius: 2px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tag.late { background: var(--danger-bg); color: var(--danger); border-color: currentColor; }
+.tag.soon { background: var(--warn-bg);   color: var(--warn);   border-color: currentColor; }
+.tag.fine { background: var(--good-bg);   color: var(--good);   border-color: currentColor; }
+
+details.party { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: .35rem; }
+details.party > summary {
+  display: flex; align-items: center; gap: .65rem; flex-wrap: wrap;
+  padding: .55rem .8rem; cursor: pointer; font-weight: 600; list-style: none;
+}
+details.party > summary::-webkit-details-marker { display: none; }
+details.party > summary::before { content: "\25B8"; color: var(--ink-faint); }
+details.party[open] > summary { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+details.party[open] > summary::before { content: "\25BE"; }
+details.party > summary .amount { margin-left: auto; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+details.party .body { padding: .7rem .8rem .9rem; }
+
+/* -------------------------------------------------------------- messages */
+
+.notice { padding: .6rem .8rem; border-radius: var(--radius); border: 1px solid currentColor; margin-bottom: .8rem; font-weight: 500; }
+.notice.error { background: var(--danger-bg); color: var(--danger); }
+.notice.warn  { background: var(--warn-bg);   color: var(--warn); }
+.notice.good  { background: var(--good-bg);   color: var(--good); }
+.notice ul { margin: .35rem 0 0; padding-left: 1.2rem; }
+
+.empty { padding: 1.6rem 1rem; text-align: center; color: var(--ink-faint); }
+
+/* ----------------------------------------------------------------- modal */
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(10, 20, 40, .62);
+  display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 50;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--navy-dark);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .35);
+  width: min(46rem, 100%); max-height: 90vh; overflow: auto;
+}
+.modal h2 {
+  margin: 0 0 .8rem;
+  padding: .55rem 1rem;
+  background: linear-gradient(180deg, var(--navy-light), var(--navy));
+  color: #fff;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.modal > *:not(h2) { margin-left: 1rem; margin-right: 1rem; }
+.modal .actions { display: flex; gap: .55rem; justify-content: flex-end; margin: 1rem; flex-wrap: wrap; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 3rem; transform: translateX(-50%);
+  z-index: 60; display: flex; flex-direction: column; gap: .5rem; align-items: center;
+  pointer-events: none;
+}
+#toast .msg {
+  background: var(--navy); color: #fff;
+  padding: .55rem 1.1rem; border-radius: var(--radius); font-weight: 600;
+  border: 1px solid var(--navy-dark);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .3);
+  max-width: 90vw;
+}
+#toast .msg.bad { background: var(--danger); border-color: #7a1010; }
+
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+pre.raw {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: .7rem; overflow: auto; max-height: 22rem; font-size: .78rem;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* On a narrow screen the button panel drops under the workspace, so nothing is
+   lost on a phone even though this is built for the counter PC. */
+@media (max-width: 820px) {
+  .tally-frame { height: auto; min-height: 100dvh; }
+  .tally-body { grid-template-columns: minmax(0, 1fr); overflow: visible; }
+  .tally-workspace, .tally-buttons { overflow: visible; }
+  .tally-buttons {
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    gap: .5rem 1rem;
+  }
+  .tally-group { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .3rem; }
+  .tally-group-label { border-bottom: none; margin: 0; padding-right: .2rem; }
+  .tally-buttons button { width: auto; }
+  .tally-workspace { padding: .75rem; }
+}

@@ -1,0 +1,18 @@
+# Local business data, never the repository's business.
+# posted-vouchers.jsonl and day-bills.json carry real party names, amounts and
+# Tally voucher ids from whichever machine the program runs on.
+data/
+
+# Dependencies (there are none today, but a future one must not be committed).
+node_modules/
+
+# Editor and OS clutter
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
